@@ -20,7 +20,10 @@ class Shape(ABC):
         self.side = side
         self.angle = angle
         self.coords = self.populate_coords()
-    
+        
+    def get_degrees(self):
+        return (180/3.14) * self.angle
+        
     @abstractmethod    
     def populate_coords():
         raise NotImplementedError
