@@ -5,7 +5,7 @@ Created on Mon Nov 16 00:25:09 2020
 
 @author: rahulr
 """
-
+import Map
 class ShapeFactory():
     """
     @param seed: seed for random function, int
@@ -16,11 +16,25 @@ class ShapeFactory():
     
     @staticmethod
     def getShapes(num):
-        # use static variable of map to check for collision when making new random
-        # objects
+        
+        raise NotImplementedError
+        # TODO 
+        # In future, avoid clipping obstacles with a mapInstance
+        if ShapeFactory.mapInstance is None:
+            mapInstance = Map()
+        
         # generate 'num' amount of objects and return them
         # increment the static object counter
-        raise NotImplementedError
+        shapes = []
+        for i in range(num):
+            shape = Shape()
+            shapes.append(shape)
+        
+        ShapeFactory.numObjects += num
+        return shapes    
+        
+
+
         
     @staticmethod
     def getRandomPos():
