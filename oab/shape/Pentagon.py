@@ -6,7 +6,7 @@ Created on Tue Nov 17 14:02:18 2020
 @author: rahulr
 """
 
-import Shape
+from oab.shape import Shape
 from math import sin,cos
 
 class Pentagon(Shape):
