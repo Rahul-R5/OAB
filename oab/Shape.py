@@ -11,20 +11,23 @@ from abc import ABC, abstractmethod
 class Shape(ABC):
     '''
     @param origin: tuple of origin coordinates (int, int)
-    @param side: length of shape side int
+    @param sides: length of shape side int
     @param coords: list of int tuples representing the shape's vertices
     @param angle: orientation angle in radians
     '''
-    def __init__(self, origin = (0,0), side = 1, angle = 0):
+    def __init__(self, origin = (0,0), sides = 3, angle = 0):
         self.origin = origin
-        self.side = side
+        self.sides = sides
         self.angle = angle
         self.coords = self.populate_coords()
         
     def get_degrees(self):
         return (180/3.14) * self.angle
-        
+    
+    def get_coords(self):    
+        return self.coords
+    
     @abstractmethod    
-    def populate_coords():
+    def populate_coords(self):
         raise NotImplementedError
         
