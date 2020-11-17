@@ -46,4 +46,18 @@ class Sensor():
         self.ray_pts = self.getEndPoints(self.origin, self.start_ang, 
                                          self.ang_range, self.length,
                                          self.num_ray)
-            
+    """
+    Rotates the sensor by given angle
+    +ve angle: counter-clockwise rotation
+    -ve angle: clockwise rotation
+    """
+    def rotate(self, angle):
+        self.start_ang += angle
+        self.ray_pts = self.getEndPoints(self.origin, self.start_ang, 
+                                         self.ang_range, self.length,
+                                         self.num_ray)
+    """
+    Returns the ray end points
+    """    
+    def get_pts(self):
+        return self.ray_pts
