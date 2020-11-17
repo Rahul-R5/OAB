@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 class Shape(ABC):
     '''
     @param origin: tuple of origin coordinates (int, int)
-    @param sides: length of shape side int
+    @param sides: no of sides of the shape
     @param coords: list of int tuples representing the shape's vertices
     @param angle: orientation angle in radians
     '''
