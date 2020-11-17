@@ -5,10 +5,10 @@ Created on Mon Nov 16 00:25:09 2020
 
 @author: rahulr
 """
-import Map
+from oab import Map
+from oab.shape import Square, Triangle, Pentagon
 import random
-import Shape
-import Rectangle
+
 
 
 class ShapeFactory():
@@ -38,7 +38,7 @@ class ShapeFactory():
         for i in range(num):
             origin = ShapeFactory.getRandomPos()
             angle = ShapeFactory.getRandomAngle()
-            shape = Rectangle(origin, 4, angle)
+            shape = Square(origin, 4, angle)
             shapes.append(shape)
         
         ShapeFactory.numObjects += num
