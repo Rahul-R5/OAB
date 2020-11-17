@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Nov 17 14:01:16 2020
+Created on Tue Nov 17 13:52:47 2020
 
 @author: rahulr
 """
-
-import Shape
+from oab.shape import Shape
 from math import sin,cos
 
-class Square(Shape):
+class Triangle(Shape):
     
     def populate_coords(self):
         sides = self.sides
