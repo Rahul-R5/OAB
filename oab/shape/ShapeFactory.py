@@ -5,8 +5,8 @@ Created on Mon Nov 16 00:25:09 2020
 
 @author: rahulr
 """
-from oab import Map
-from oab.shape import Square, Triangle, Pentagon
+from oab.Map import Map
+from oab.shape.Square import Square
 import random
 
 
@@ -25,12 +25,11 @@ class ShapeFactory():
     """
     @staticmethod
     def getShapes(num):
-        
-        raise NotImplementedError
+
         # TODO 
         # In future, avoid clipping obstacles with a mapInstance
         if ShapeFactory.mapInstance is None:
-            ShapeFactory.mapInstance = Map()
+            ShapeFactory.mapInstance = Map(0.5, (5, 5), 8)
         
         # generate 'num' amount of objects and return them
         # increment the static object counter
@@ -47,8 +46,8 @@ class ShapeFactory():
             
     @staticmethod
     def getRandomPos():
-        posX = random.randint(0, ShapeFactory.mapInstance.grid[0])
-        posY = random.randint(0, ShapeFactory.mapInstance.grid[1])   
+        posX = random.randint(0, ShapeFactory.mapInstance.rows)
+        posY = random.randint(0, ShapeFactory.mapInstance.columns)   
         
         return (posX, posY)
      
@@ -60,7 +59,7 @@ class ShapeFactory():
         raise NotImplementedError
         
     @staticmethod
-    def getRandomAngle(num):
+    def getRandomAngle():
         angle = random.randint(0, 359)
         angle = (angle/180) * 3.14  # Convert to radians
         

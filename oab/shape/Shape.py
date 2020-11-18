@@ -15,7 +15,7 @@ class Shape(ABC):
     @param coords: list of int tuples representing the shape's vertices
     @param angle: orientation angle in radians
     '''
-    def __init__(self, origin = (0,0), sides = 3, angle = 0):
+    def __init__(self, origin, sides, angle):
         self.origin = origin
         self.sides = sides
         self.angle = angle
