@@ -1,7 +1,7 @@
 # This the main file which will run the simulation.
 
-from test.ShapeFactoryTest import run
+from oab.test.ShapeFactoryTest import run
 
-
-run()
+if __name__ == "__main__":
+    run()
     
