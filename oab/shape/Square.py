@@ -6,7 +6,7 @@ Created on Tue Nov 17 14:01:16 2020
 @author: rahulr
 """
 
-from oab.shape import Shape
+from oab.shape.Shape import Shape
 from math import sin,cos
 
 class Square(Shape):
