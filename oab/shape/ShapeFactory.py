@@ -7,6 +7,8 @@ Created on Mon Nov 16 00:25:09 2020
 """
 from oab.Map import Map
 from oab.shape.Square import Square
+from oab.shape.Pentagon import Pentagon
+from oab.shape.Triangle import Triangle
 import random
 
 
@@ -29,7 +31,7 @@ class ShapeFactory():
         # TODO 
         # In future, avoid clipping obstacles with a mapInstance
         if ShapeFactory.mapInstance is None:
-            ShapeFactory.mapInstance = Map(0.5, (5, 5), 8)
+            ShapeFactory.mapInstance = Map(0.5, (10, 10), 8)
         
         # generate 'num' amount of objects and return them
         # increment the static object counter
