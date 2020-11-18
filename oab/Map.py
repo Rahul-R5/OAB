@@ -6,9 +6,8 @@ Created on Mon Nov 16 10:49:55 2020
 @author: rahulr
 """
 import math
-import Shape
-import ShapeFactory
-import Sensor
+from oab.shape import ShapeFactory, Shape
+from oab.Sensor import Sensor
 
 class Map():
     
