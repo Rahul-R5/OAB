@@ -22,7 +22,7 @@ class SensorFactory():
         start_ang = SensorFactory.getRandomAngle()
         ang_range = SensorFactory.getRadians(360)
         
-        sensor = Sensor(origin, start_ang, ang_range, 10, 5)
+        sensor = Sensor(origin, start_ang, ang_range, 30, 5)
         return sensor
         
     
