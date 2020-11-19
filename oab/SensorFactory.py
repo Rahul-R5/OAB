@@ -6,8 +6,8 @@ Created on Thu Nov 19 10:20:00 2020
 @author: rahulr
 """
 import random
-from oab import Sensor
-from oab import MapInfo
+from oab.Sensor import Sensor
+from oab.MapInfo import MapInfo
 
 class SensorFactory():
     
