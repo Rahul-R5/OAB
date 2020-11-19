@@ -22,6 +22,6 @@ class Pentagon(Shape):
         for i in range(5):
             X = ptX + sides * cos(start_ang + i * reso)
             Y = ptY + sides * sin(start_ang + i * reso)
-            coords.append((X, Y))
+            coords.append([X, Y])
         
         return coords

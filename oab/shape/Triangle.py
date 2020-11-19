@@ -19,8 +19,8 @@ class Triangle(Shape):
         
         coords = []
         for i in range(3):
-            ptX = ptX + sides * cos(start_ang + i * reso)
-            ptY = ptY + sides * sin(start_ang + i * reso)
-            coords.append((ptX, ptY))
+            X = ptX + sides * cos(start_ang + i * reso)
+            Y = ptY + sides * sin(start_ang + i * reso)
+            coords.append([X, Y])
         
         return coords
