@@ -12,9 +12,13 @@ import matplotlib
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
 import numpy as np
+from oab.Map import Map
+from oab.MapInfo import MapInfo
 
 def run():
     num = 3
+    mapInstance = Map(0.5, (50,50), 9)
+    MapInfo.setMap(mapInstance)
     fig, ax = plt.subplots()
     shapes = ShapeFactory.getShapes(num) 
     
