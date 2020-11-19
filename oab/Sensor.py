@@ -23,13 +23,13 @@ class Sensor():
     and returns the list of tuples
     @return pts: list of float tuples
     """
-    def getEndPoints(origin, start_ang, ang_range, length, num_ray):
+    def getEndPoints(self, origin, start_ang, ang_range, length, num_ray):
         pts = []
         reso = ang_range/num_ray
         for i in range(num_ray):
             
-            ptX = origin(0)
-            ptY = origin(1)
+            ptX = origin[0]
+            ptY = origin[1]
             ptX = ptX + length * cos(start_ang + i * reso)
             ptY = ptY + length * sin(start_ang + i * reso)
             pt = (ptX, ptY)
