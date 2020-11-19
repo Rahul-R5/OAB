@@ -6,6 +6,7 @@ Created on Mon Nov 16 00:25:09 2020
 @author: rahulr
 """
 from oab.Map import Map
+from oab import MapInfo
 from oab.shape.Square import Square
 from oab.shape.Pentagon import Pentagon
 from oab.shape.Triangle import Triangle
@@ -31,7 +32,7 @@ class ShapeFactory():
         # TODO 
         # In future, avoid clipping obstacles with a mapInstance
         if ShapeFactory.mapInstance is None:
-            ShapeFactory.mapInstance = Map(0.5, (10, 10), 8)
+            ShapeFactory.mapInstance = MapInfo.getMap()
         
         # generate 'num' amount of objects and return them
         # increment the static object counter
