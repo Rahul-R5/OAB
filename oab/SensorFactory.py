@@ -31,7 +31,7 @@ class SensorFactory():
         posX = random.randint(0, SensorFactory.mapInstance.rows)
         posY = random.randint(0, SensorFactory.mapInstance.columns)   
         
-        return (posX, posY)
+        return [posX, posY]
     
     @staticmethod
     def getRandomAngle():

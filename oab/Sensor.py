@@ -20,8 +20,8 @@ class Sensor():
                                          self.num_ray)
     """
     Calculates the end of the finite length sensor rays with given parameters
-    and returns the list of tuples
-    @return pts: list of float tuples
+    and returns the 2D array
+    @return pts: list of float list(2D array)
     """
     def getEndPoints(self, origin, start_ang, ang_range, length, num_ray):
         pts = []
@@ -32,7 +32,7 @@ class Sensor():
             ptY = origin[1]
             ptX = ptX + length * cos(start_ang + i * reso)
             ptY = ptY + length * sin(start_ang + i * reso)
-            pt = (ptX, ptY)
+            pt = [ptX, ptY]
             
             pts.append(pt)
             

@@ -40,19 +40,21 @@ class ShapeFactory():
         for i in range(num):
             origin = ShapeFactory.getRandomPos()
             angle = ShapeFactory.getRandomAngle()
-            shape = Square(origin, 4, angle)
+            shape = Triangle(origin, 4, angle)
             shapes.append(shape)
         
         ShapeFactory.numObjects += num
         return shapes    
         
-            
+    """
+     returns a random coordinate within maps boundaries
+    """       
     @staticmethod
     def getRandomPos():
         posX = random.randint(0, ShapeFactory.mapInstance.rows)
         posY = random.randint(0, ShapeFactory.mapInstance.columns)   
         
-        return (posX, posY)
+        return [posX, posY]
      
     """  
     Randomly selects the side of the shape needed from available shape
