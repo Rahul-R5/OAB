@@ -18,22 +18,16 @@ class SensorObstacleIntersectionTest():
         MapInfo.setMap(mapInstance)
         mapInstance.addObstacles(num)
         mapInstance.addRobot()
-        itr = 3
-        reso = (2 * 3.14/itr) 
+        itr = 10
+        reso = (2 * 3.14/itr) + 0.25
         sensor = mapInstance.robot[0]
-        obstacles = mapInstance.obstacles
-        xPoints = []
-        yPoints = []
+
         fig, ax = plt.subplots()
         for i in range(itr):             
-            sensor.rotate(reso)
-            intersections = mapInstance.getIntersections(obstacles, sensor)
-            ax = mapInstance.drawState(ax)
-            if len(intersections) > 0:
-                for i in range(len(intersections)):
-                    xPoints.append(intersections[i][0])
-                    yPoints.append(intersections[i][1])
-                ax.plot(xPoints, yPoints, 'r*')
+            sensor.rotate(reso) 
+            
+            # Plotting the state of the map
+            ax = mapInstance.drawState(ax)                   
             plt.title("SensorIntersectionsTest")
             plt.show()
-            time.sleep(0.5)
+            time.sleep(0.1)
