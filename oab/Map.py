@@ -7,7 +7,7 @@ Created on Mon Nov 16 10:49:55 2020
 """
 import math
 
-import numpy as np
+#import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
@@ -20,6 +20,7 @@ from oab.SensorFactory import SensorFactory
 
 class Map():
     
+    
     def __init__(self, resolution, grid, seed):
         self.resolution = resolution
         self.rows = grid[0]
@@ -27,7 +28,7 @@ class Map():
         self.seed = seed
         self.obstacles = []
         self.robot = []
-        
+        self.intersections = []
     
     def addObstacles(self, num):
         if self.obstacles is not None:
@@ -44,11 +45,11 @@ class Map():
     def getIntersections(self, param_1, param_2):
         intersections = []
         if (not isinstance(param_1, list))  and isinstance(param_1, type(Shape)) and isinstance(param_2, type(Sensor)):
-            intersections += self.getSingleSensorIntersections(param_1, param_2)
+            intersections += self.getSingleObstacleSensorIntersections(param_1, param_2)
             
         elif isinstance(param_1, list) and isinstance(param_1[0], Shape) and isinstance(param_2, Sensor):
-            for obstacle in param_1:
-                intersections += self.getSingleSensorIntersections(obstacle, param_2)
+            #for obstacle in param_1:
+            intersections += self.getManyObstacleSensorIntersections(param_1, param_2)
                 
         elif (not isinstance(param_1, list)) and isinstance(param_1[0], type(Shape)) and (not isinstance(param_2, list)) and isinstance(param_2[0], type(Shape)):
             intersections += self.getSingleShapeIntersections(param_1, param_2)
@@ -60,40 +61,94 @@ class Map():
         
         return intersections
     
-    def getSingleSensorIntersections(self, obj_1, obj_2):        
+    """
+    Called when only one sensor and many obstacles exist in environment
+    """
+    def getManyObstacleSensorIntersections(self, obj_1, obj_2):
+        intersections = []
+        #obstacle_pts = obj_1.get_coords()
+        sensor_pts = obj_2.get_pts()
+        sensor_origin = obj_2.origin
+        
+        for j in range(len(sensor_pts)):
+            temp_pts = []
+            for obstacle in obj_1:
+                obstacle_pts = obstacle.get_coords()
+                for i in range(len(obstacle_pts)):    
+                    vertA = i
+                    
+                    if i == (len(obstacle_pts) - 1):
+                        vertB = 0              
+                    else:
+                        vertB = vertA + 1
+                        
+                    [flag, point] = self._getLineIntersection(obstacle_pts[vertA], obstacle_pts[vertB], 
+                                                                  sensor_pts[j], sensor_origin)
+                        
+                    if flag:
+                        temp_pts.append(point)
+            
+            # Eliminating intersections through obstacles through L2 norm
+            val, pos = self._getClosestIntersection(temp_pts, sensor_origin)
+            
+            if pos >= 0:
+                intersections.append(temp_pts[pos])
+                
+        return intersections
+    """
+    Called when only one sensor and one obstacle exists in environment
+    """
+    def getSingleObstacleSensorIntersections(self, obj_1, obj_2):        
         intersections = []
         obstacle_pts = obj_1.get_coords()
-        obstacle_origin  = obj_1.origin
         sensor_pts = obj_2.get_pts()
-        sensor_orgin = obj_2.origin
+        sensor_origin = obj_2.origin
         
         # Loop through all edges of an obstacle and check if particular line intersects it,
         # figure out which intersections are true
         
         for j in range(len(sensor_pts)):
             temp_pts = []
-            for i in range(len(obstacle_pts) - 1):               
-                [flag, point] = self._getLineIntersection(obstacle_pts[i], obstacle_pts[i+1], 
-                                                          sensor_pts[j], sensor_orgin)
+            for i in range(len(obstacle_pts)):    
+                vertA = i
+                
+                if i == (len(obstacle_pts) - 1):
+                    vertB = 0              
+                else:
+                    vertB = vertA + 1
+                    
+                [flag, point] = self._getLineIntersection(obstacle_pts[vertA], obstacle_pts[vertB], 
+                                                              sensor_pts[j], sensor_origin)
+                    
                 if flag:
                     temp_pts.append(point)
             
             # Eliminating intersections through obstacles through L2 norm
-            min_d = 10000000000
-            pos = -1
-            for i in range(len(temp_pts)):
-                point = temp_pts[i]
-                d = self._getL2Distance(point, sensor_orgin)
-                
-                if d <= min_d:
-                    min_d = d
-                    pos = i
+            val, pos = self.getClosestIntersection(temp_pts, sensor_origin)
             
             if pos >= 0:
                 intersections.append(temp_pts[pos])
                 
-        return intersections 
-    
+        return intersections
+    """
+    Returns the intersection having the least L2 norm with origin and its index
+    @param intersections - list of intersection points
+    @param origin - reference point to calculate distance to intersection
+    """
+    def _getClosestIntersection(self, intersections, origin):
+        min_d = 10000000000
+        pos = -1
+        for i in range(len(intersections)):
+            point = intersections[i]
+            d = self._getL2Distance(point, origin)
+            
+            if d <= min_d:
+                min_d = d
+                pos = i
+        # return the mid
+        return [min_d, pos]
+        
+        
     def getSingleShapeIntersections(self, obj_1, obj_2):
         raise NotImplementedError
             
@@ -102,15 +157,15 @@ class Map():
         [M1, C1] = self._getLineParam(A, B)         
         [M2, C2] = self._getLineParam(C, D)         
         
-        if M1 == M2:
+        if abs(M1) == abs(M2):
             return [False, None]
         else:
             X = (C2 - C1)/(M1 - M2)
             Y = M1 * X + C1
-            min_1 = np.min(A[0])
-            max_1 = np.max(B[0])
-            min_2 = np.min(C[0])
-            max_2 = np.max(D[0])
+            min_1 = min([A[0],B[0]])
+            max_1 = max([A[0],B[0]])
+            min_2 = min([C[0],D[0]])
+            max_2 = max([C[0],D[0]])
         if min_1 <= X <= max_1 and min_2 <= X <= max_2:
             return [True, [X, Y]]
         else:            
@@ -126,9 +181,9 @@ class Map():
     
     def drawState(self, ax):
         ax = self.drawManyObstacles(ax)
-        ax = self._drawRobot(ax)
+        ax = self.drawRobot(ax)
+        ax = self.drawIntersections(ax)
         return ax
-        #plt.show()
         
     def drawManyObstacles(self, ax):
         obstacles = self.obstacles
@@ -152,7 +207,7 @@ class Map():
         
         return ax
     
-    def _drawRobot(self, ax):
+    def drawRobot(self, ax):
         sensor = self.robot[0]
         origin = sensor.origin
         points = sensor.get_pts()
@@ -160,5 +215,18 @@ class Map():
             ax.plot([origin[0], point[0]], [origin[1], point[1]]) 
         
         return ax
+    
+    def drawIntersections(self, ax):
+        self.intersections += self.getIntersections(self.obstacles, self.robot[0])
+        xPoints = []
+        yPoints = []
+        
+        for i in range(len(self.intersections)):
+            xPoints.append(self.intersections[i][0])
+            yPoints.append(self.intersections[i][1])
+        ax.plot(xPoints, yPoints, 'r*')
+        
+        return ax
+    
     def moveRobot(self):
         raise NotImplementedError
