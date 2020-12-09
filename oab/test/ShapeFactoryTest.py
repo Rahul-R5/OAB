@@ -17,9 +17,9 @@ from oab.MapInfo import MapInfo
 class ShapeFactoryTest():
     def run(self):
         num = 5
-        mapInstance = Map(0.5, (50,50), 9)
+        mapInstance = Map(0.5, (50,50), 8)
         MapInfo.setMap(mapInstance)
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(10,10))
         shapes = ShapeFactory.getShapes(num) 
         
         for shape in shapes:
@@ -31,6 +31,7 @@ class ShapeFactoryTest():
     
             self.draw(fig, ax, num, points)
         plt.title("ShapeFactoryTest")
+        plt.axis('square')
         plt.show()
     
     def draw(self, fig, ax, num, points):
