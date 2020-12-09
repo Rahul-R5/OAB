@@ -19,7 +19,7 @@ class ShapeFactory():
     @param seed: seed for random function, int
     @param numObjects: number of objects initialised through factory, int    
     """
-    seed = 8
+    seed = 7
     numObjects = 0
     mapInstance = None  # Have a map class variable (i.e static variable)
     
@@ -33,6 +33,7 @@ class ShapeFactory():
         # In future, avoid clipping obstacles with a mapInstance
         if ShapeFactory.mapInstance is None:
             ShapeFactory.mapInstance = MapInfo.getMap()
+            ShapeFactory.seed = ShapeFactory.mapInstance.seed
         
         # generate 'num' amount of objects and return them
         # increment the static object counter
@@ -40,7 +41,7 @@ class ShapeFactory():
         for i in range(num):
             origin = ShapeFactory.getRandomPos()
             angle = ShapeFactory.getRandomAngle()
-            shape = Triangle(origin, 4, angle)
+            shape = Square(origin, 4, angle)
             shapes.append(shape)
         
         ShapeFactory.numObjects += num
@@ -51,6 +52,8 @@ class ShapeFactory():
     """       
     @staticmethod
     def getRandomPos():
+        random.seed(ShapeFactory.seed)
+        ShapeFactory.seed += 1
         posX = random.randint(0, ShapeFactory.mapInstance.rows)
         posY = random.randint(0, ShapeFactory.mapInstance.columns)   
         
@@ -65,6 +68,8 @@ class ShapeFactory():
         
     @staticmethod
     def getRandomAngle():
+        random.seed(ShapeFactory.seed)
+        ShapeFactory.seed += 1
         angle = random.randint(0, 359)
         angle = (angle/180) * 3.14  # Convert to radians
         

@@ -11,18 +11,20 @@ from oab.MapInfo import MapInfo
 
 class SensorFactory():
     
+    seed = 8
     mapInstance = None
     
     @staticmethod
     def getSensor():
         if SensorFactory.mapInstance is None:
             SensorFactory.mapInstance = MapInfo.mapInstance
+            SensorFactory.seed = SensorFactory.mapInstance.seed
         
         origin = SensorFactory.getRandomPos()
         start_ang = SensorFactory.getRandomAngle()
-        ang_range = SensorFactory.getRadians(360)
+        ang_range = SensorFactory.getRadians(90)
         
-        sensor = Sensor(origin, start_ang, ang_range, 30, 5)
+        sensor = Sensor(origin, start_ang, ang_range, 30, 10)
         return sensor
         
     
@@ -31,7 +33,8 @@ class SensorFactory():
         posX = random.randint(0, SensorFactory.mapInstance.rows)
         posY = random.randint(0, SensorFactory.mapInstance.columns)   
         
-        return [posX, posY]
+        #return [posX, posY]
+        return [20,20]
     
     @staticmethod
     def getRandomAngle():
