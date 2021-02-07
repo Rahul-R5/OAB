@@ -15,9 +15,10 @@ from matplotlib.collections import PatchCollection
 
 from oab.shape.ShapeFactory import ShapeFactory
 from oab.shape.Shape import Shape
-from oab.Sensor import Sensor
-from oab.SensorFactory import SensorFactory
+from oab.robot.Robot import Robot
+from oab.robot.RobotFactory import RobotFactory
 
+# NOTE: Can use **kwargs for keyword arguments passed. Better reaability
 class Map():
     
     
@@ -27,7 +28,7 @@ class Map():
         self.columns = grid[1]
         self.seed = seed
         self.obstacles = []
-        self.robot = []
+        self.robot = None
         self.intersections = []
     
     def addObstacles(self, num):
@@ -36,19 +37,27 @@ class Map():
         else:
             self.obstacles = ShapeFactory.getShapes(num)
             
-    def addRobot(self):
-        if self.robot is not None:
-            self.robot.append(SensorFactory.getSensor())
-        else:
-            self.robot = SensorFactory.getSensor()
+    def addRobot(self, options = []):
+        if self.robot is None:            
+            if len(options) == 2:
+                self.robot = RobotFactory.getRobot([options[0], options[1]])
+            else:
+                self.robot = RobotFactory.getRobot()
+            
             
     def getIntersections(self, param_1, param_2):
         intersections = []
-        if (not isinstance(param_1, list))  and isinstance(param_1, type(Shape)) and isinstance(param_2, type(Sensor)):
+        
+        if len(param_1) == 0 or param_2 is None:
+            return []
+        
+        elif (not isinstance(param_1, list))  and isinstance(param_1, type(Shape)) and isinstance(param_2, type(Robot)):
+            param_2 = param_2.sensors[0]
             intersections += self.getSingleObstacleSensorIntersections(param_1, param_2)
             
-        elif isinstance(param_1, list) and isinstance(param_1[0], Shape) and isinstance(param_2, Sensor):
+        elif isinstance(param_1, list) and isinstance(param_1[0], Shape) and isinstance(param_2, Robot):
             #for obstacle in param_1:
+            param_2 = param_2.sensors[0]
             intersections += self.getManyObstacleSensorIntersections(param_1, param_2)
                 
         elif (not isinstance(param_1, list)) and isinstance(param_1[0], type(Shape)) and (not isinstance(param_2, list)) and isinstance(param_2[0], type(Shape)):
@@ -138,6 +147,7 @@ class Map():
     def _getClosestIntersection(self, intersections, origin):
         min_d = 10000000000
         pos = -1
+        
         for i in range(len(intersections)):
             point = intersections[i]
             d = self._getL2Distance(point, origin)
@@ -194,7 +204,8 @@ class Map():
             
     def _drawObstacle(self, ax, points):        
         patches = []
-
+        
+        # polygon has fill and edge colour options to differentiate from robot
         polygon = Polygon(points, closed = True)
         patches.append(polygon)
     
@@ -202,22 +213,33 @@ class Map():
         ymax = self.columns
         ax = plt.gca()
         ax.add_patch(polygon)
-        ax.set_xlim(-10,xmax)
-        ax.set_ylim(-10,ymax)
+        ax.set_xlim([-xmax, xmax])
+        ax.set_ylim([-ymax, ymax])
         
         return ax
-    
+    ## TODO: Change the camera focus from starting at the robot to a static frame
     def drawRobot(self, ax):
-        sensor = self.robot[0]
+        # Drawing robot
+        robot = self.robot
+        robot_pts = robot.get_pts()
+        patches = []
+
+        polygon = Polygon(robot_pts, closed = True)
+        patches.append(polygon)
+    
+        ax.add_patch(polygon)
+        
+        # Drawing sensor
+        sensor = robot.sensors[0]
         origin = sensor.origin
-        points = sensor.get_pts()
-        for point in points:
+        sensor_pts = sensor.get_pts()
+        for point in sensor_pts:
             ax.plot([origin[0], point[0]], [origin[1], point[1]]) 
         
         return ax
     
     def drawIntersections(self, ax):
-        self.intersections += self.getIntersections(self.obstacles, self.robot[0])
+        self.intersections += self.getIntersections(self.obstacles, self.robot)
         xPoints = []
         yPoints = []
         
