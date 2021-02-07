@@ -20,7 +20,7 @@ class SensorObstacleIntersectionTest():
         mapInstance.addRobot()
         itr = 3
         reso = (2 * 3.14/itr) + 0.25
-        sensor = mapInstance.robot[0]
+        sensor = mapInstance.robot[0].sensors[0]
 
         
         for i in range(itr):             
