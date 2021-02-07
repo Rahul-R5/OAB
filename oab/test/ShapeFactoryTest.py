@@ -19,7 +19,7 @@ class ShapeFactoryTest():
         num = 5
         mapInstance = Map(0.5, (50,50), 8)
         MapInfo.setMap(mapInstance)
-        fig, ax = plt.subplots(figsize=(10,10))
+        fig, ax = plt.subplots(figsize=(7,7))
         shapes = ShapeFactory.getShapes(num) 
         
         for shape in shapes:
@@ -34,10 +34,8 @@ class ShapeFactoryTest():
         plt.axis('square')
         plt.show()
     
-    def draw(self, fig, ax, num, points):
-        
+    def draw(self, fig, ax, num, points):        
         patches = []
-        num_polygons = 1
         mapInstance = ShapeFactory.mapInstance
         
         polygon = Polygon(points, closed = True)
