@@ -47,7 +47,7 @@ class RobotFactory():
     
     @staticmethod
     def getRandomPos():
-        random.seed(RobotFactory.seed)
+        random.seed(RobotFactory.seed-1)
         posX = random.randint(0, RobotFactory.mapInstance.rows)
         posY = random.randint(0, RobotFactory.mapInstance.columns)   
         
@@ -55,7 +55,7 @@ class RobotFactory():
     
     @staticmethod
     def getRandomAngle():
-        random.seed(RobotFactory.seed)
+        random.seed(RobotFactory.seed-1)
         angle = random.randint(0, 359)
         angle = (angle/180) * 3.14  # Convert to radians
         
