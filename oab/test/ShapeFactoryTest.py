@@ -5,15 +5,14 @@ Created on Tue Nov 17 19:26:10 2020
 
 @author: rahulr
 """
-
-from oab.shape.ShapeFactory import ShapeFactory
 import matplotlib.pyplot as plt
-import matplotlib
-from matplotlib.patches import Polygon
-from matplotlib.collections import PatchCollection
 import numpy as np
+from matplotlib.patches import Polygon
+
 from oab.Map import Map
 from oab.MapInfo import MapInfo
+from oab.shape.ShapeFactory import ShapeFactory
+
 class ShapeFactoryTest():
     def run(self):
         num = 5
