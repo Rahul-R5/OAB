@@ -50,6 +50,7 @@ class RobotFactory():
         random.seed(RobotFactory.seed-1)
         posX = random.randint(0, RobotFactory.mapInstance.rows)
         posY = random.randint(0, RobotFactory.mapInstance.columns)   
+        RobotFactory.seed -= 1
         
         return [posX, posY]
     
@@ -58,6 +59,7 @@ class RobotFactory():
         random.seed(RobotFactory.seed-1)
         angle = random.randint(0, 359)
         angle = (angle/180) * 3.14  # Convert to radians
+        RobotFactory.seed -= 1
         
         return angle
     
