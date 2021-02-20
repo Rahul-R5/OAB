@@ -18,13 +18,14 @@ class Sensor():
         self.ray_pts = []
         self.set_pts()
         
-    """
-    Calculates the end of the finite length sensor rays with given parameters
-    and returns the 2D array
-    @return pts: list of float list(2D array)
-    """
-    # NOTE: Can use **kwargs for keyword arguments passed. Better reaability
+    
+    # NOTE: Can use **kwargs for keyword arguments passed. Better readability
     def set_pts(self):
+        """
+        Calculates the end of the finite length sensor rays with given parameters
+        and returns the 2D array
+        @return pts: list of float list(2D array)
+        """
         pts = []        
         length = self.length
         start_ang = self.start_ang
@@ -42,25 +43,32 @@ class Sensor():
         
         self.ray_pts = pts
         
+    def set_state(self, state):
+        self.origin = state[0:2]
+        self.start_ang = state[2] - self.ang_range/2
+        self.set_pts()
+        
     
-    """
-    Moves the sensor to a different coordinate
-    """
     def relocate(self, origin):
+        """
+        Moves the sensor to a different coordinate
+        """
         self.origin = origin
         self.set_pts()
 
-    """
-    Rotates the sensor by given angle
-    +ve angle: counter-clockwise rotation
-    -ve angle: clockwise rotation
-    """
+    
     def rotate(self, angle):
+        """
+        Rotates the sensor by given angle
+        +ve angle: counter-clockwise rotation
+        -ve angle: clockwise rotation
+        """
         self.start_ang += angle
         self.set_pts()
         
-    """
-    Returns the ray end points
-    """    
+      
     def get_pts(self):
+        """
+        Returns the ray end points
+        """  
         return self.ray_pts
