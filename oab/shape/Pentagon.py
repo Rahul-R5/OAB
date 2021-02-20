@@ -12,7 +12,7 @@ from math import sin,cos
 class Pentagon(Shape):
     
     def populate_coords(self):
-        size = self.sides
+        size = self.size
         reso = (2 * 3.14/5)
         ptX = self.origin[0]
         ptY = self.origin[1]

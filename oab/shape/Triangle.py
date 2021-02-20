@@ -11,7 +11,7 @@ from math import sin,cos
 class Triangle(Shape):
     
     def populate_coords(self):
-        size = self.sides
+        size = self.size
         reso = (2 * 3.14/3)
         ptX = self.origin[0]
         ptY = self.origin[1]

@@ -12,7 +12,7 @@ from math import sin,cos
 class Square(Shape):
     
     def populate_coords(self):
-        size = self.sides
+        size = self.size
         reso = (2 * 3.14/4)
         ptX = self.origin[0]
         ptY = self.origin[1]
