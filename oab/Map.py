@@ -5,13 +5,9 @@ Created on Mon Nov 16 10:49:55 2020
 
 @author: rahulr
 """
-import math
-
-#import numpy as np
-import matplotlib
+from math import sqrt
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
-from matplotlib.collections import PatchCollection
 
 from oab.shape.ShapeFactory import ShapeFactory
 from oab.shape.Shape import Shape
@@ -44,7 +40,7 @@ class Map():
             else:
                 self.robot = RobotFactory.getRobot()
             
-            
+    #--------------------Intersection Detection Agorithmns---------------------        
     def getIntersections(self, param_1, param_2):
         intersections = []
         
@@ -56,7 +52,6 @@ class Map():
             intersections += self.getSingleObstacleSensorIntersections(param_1, param_2)
             
         elif isinstance(param_1, list) and isinstance(param_1[0], Shape) and isinstance(param_2, Robot):
-            #for obstacle in param_1:
             param_2 = param_2.sensors[0]
             intersections += self.getManyObstacleSensorIntersections(param_1, param_2)
                 
@@ -75,7 +70,6 @@ class Map():
     """
     def getManyObstacleSensorIntersections(self, obj_1, obj_2):
         intersections = []
-        #obstacle_pts = obj_1.get_coords()
         sensor_pts = obj_2.get_pts()
         sensor_origin = obj_2.origin
         
@@ -104,18 +98,18 @@ class Map():
                 intersections.append(temp_pts[pos])
                 
         return intersections
-    """
-    Called when only one sensor and one obstacle exists in environment
-    """
-    def getSingleObstacleSensorIntersections(self, obj_1, obj_2):        
+   
+    def getSingleObstacleSensorIntersections(self, obj_1, obj_2):      
+        """
+        Called when only one sensor and one obstacle exists in environment
+        """
         intersections = []
         obstacle_pts = obj_1.get_coords()
         sensor_pts = obj_2.get_pts()
         sensor_origin = obj_2.origin
         
         # Loop through all edges of an obstacle and check if particular line intersects it,
-        # figure out which intersections are true
-        
+        # figure out which intersections are true        
         for j in range(len(sensor_pts)):
             temp_pts = []
             for i in range(len(obstacle_pts)):    
@@ -139,12 +133,13 @@ class Map():
                 intersections.append(temp_pts[pos])
                 
         return intersections
-    """
-    Returns the intersection having the least L2 norm with origin and its index
-    @param intersections - list of intersection points
-    @param origin - reference point to calculate distance to intersection
-    """
+    
     def _getClosestIntersection(self, intersections, origin):
+        """
+        Returns the intersection having the least L2 norm with origin and its index
+        @param intersections - list of intersection points
+        @param origin - reference point to calculate distance to intersection
+        """
         min_d = 10000000000
         pos = -1
         
@@ -155,7 +150,8 @@ class Map():
             if d <= min_d:
                 min_d = d
                 pos = i
-        # return the mid
+                
+        # return the min
         return [min_d, pos]
         
         
@@ -182,49 +178,129 @@ class Map():
             return [False, None]
             
     def _getLineParam(self, A, B):
-        M = (B[1] - A[1])/ (B[0] - A[0])
+        if (B[0] - A[0]) != 0:
+            M = (B[1] - A[1])/ (B[0] - A[0])
+        else:
+            M = 10e3
         C = A[1] - (M * A[0])
         return [M, C]
     
     def _getL2Distance(self, point1, point2):
-        return math.sqrt((point2[0] - point1[0]) * (point2[0] - point1[0]) + (point2[1] - point1[1]) * (point2[1] - point1[1]))
+        return sqrt((point2[0] - point1[0]) * (point2[0] - point1[0]) 
+                         + (point2[1] - point1[1]) * (point2[1] - point1[1]))
     
-    def drawState(self, ax):
-        ax = self.drawManyObstacles(ax)
-        ax = self.drawRobot(ax)
-        ax = self.drawIntersections(ax)
-        return ax
+   #--------------------------Animation Methods-------------------------------
+    def getPatches(self, states):
+        patches = []
+        # Patches of obstacles(Done once since they don't move)
+        patches.append(self._getObstaclePatches())
         
+        for state in states:
+            frame = []
+            # Patches of robot(and sensor)
+            frame.append(self._getRobotPatches(state))
+            # Points of intersection
+            frame.append(self._getIntersections())
+            
+            patches.append(frame)
+            
+        # Return accumulated list of patches and points
+        return patches
+    
+    def _getObstaclePatches(self):        
+        patches = []        
+        obstacles = self.obstacles
+        for obstacle in obstacles:
+            polygon = Polygon(obstacle.get_coords(), closed = True)
+            patches.append(polygon)
+    
+        return patches
+    
+    def _getRobotPatches(self, state):        
+        patches = []        
+        
+        # Drawing robot
+        robot = self.robot
+        robot.set_state(state)
+        robot_pts = robot.get_pts()
+        
+        # Make polygon patch
+        polygon = Polygon(robot_pts, closed = True)
+        patches.append(polygon)
+        
+        # Drawing sensor
+        sensor = robot.sensors[0]
+        origin = sensor.origin
+        sensor_pts = sensor.get_pts()
+        for point in sensor_pts:
+            line = plt.Line2D([origin[0], point[0]], [origin[1], point[1]]) 
+            patches.append(line)
+            
+        return patches
+    
+    def _getIntersections(self, state = None):        
+        """
+        Gets the intersection points between sensor rays and obstacles
+        for the given state of the robot. No plotting is done
+        @returns: a list of x and y points
+        """
+        xPoints = []
+        yPoints = []
+        
+        # Need not set robot state as it is already done before calling this
+        # function
+        if state is not None:
+            self.robot.set_state(state)
+            
+        intersections = self.getIntersections(self.obstacles, self.robot)
+        self.intersections += intersections
+        
+        for i in range(len(intersections)):
+            xPoints.append(intersections[i][0])
+            yPoints.append(intersections[i][1])
+        
+        return [xPoints, yPoints]
+    
+    #--------------------Map Rendering Methods--------------------------------
+    def drawState(self, ax):
+        """
+        Draws the current state of the map onto the the given axes object
+        """
+        self.drawManyObstacles(ax)
+        self.drawRobot(ax)
+        self.drawIntersections(ax)
+            
     def drawManyObstacles(self, ax):
         obstacles = self.obstacles
         for obstacle in obstacles:
             vertices = obstacle.get_coords()
-            ax = self._drawObstacle(ax, vertices)
-        return ax
+            self._drawObstacle(ax, vertices)
             
-    def _drawObstacle(self, ax, points):        
+    def _drawObstacle(self, ax, points):    
+        """
+        Method for drawing a single obstacle from points onto given axes object
+
+        Parameters
+        ----------
+        ax : matplotlib.axes._subplots.AxesSubplot
+            axes object onto which the obstacle is drawn
+        points : list
+            obstacle coordinates used to generate a polygon
+        """
         patches = []
         
         # polygon has fill and edge colour options to differentiate from robot
-        polygon = Polygon(points, closed = True)
+        polygon = Polygon(points, closed = True, facecolor = "darkblue")
         patches.append(polygon)
-    
-        xmax = self.rows
-        ymax = self.columns
-        ax = plt.gca()
         ax.add_patch(polygon)
-        ax.set_xlim([-xmax, xmax])
-        ax.set_ylim([-ymax, ymax])
-        
-        return ax
-    ## TODO: Change the camera focus from starting at the robot to a static frame
+    
     def drawRobot(self, ax):
         # Drawing robot
         robot = self.robot
         robot_pts = robot.get_pts()
         patches = []
 
-        polygon = Polygon(robot_pts, closed = True)
+        polygon = Polygon(robot_pts, closed = True, facecolor = "darkgrey")
         patches.append(polygon)
     
         ax.add_patch(polygon)
@@ -234,21 +310,20 @@ class Map():
         origin = sensor.origin
         sensor_pts = sensor.get_pts()
         for point in sensor_pts:
-            ax.plot([origin[0], point[0]], [origin[1], point[1]]) 
-        
-        return ax
+            line = plt.Line2D([origin[0], point[0]], [origin[1], point[1]], color = "yellow") 
+            ax.add_line(line)
     
     def drawIntersections(self, ax):
-        self.intersections += self.getIntersections(self.obstacles, self.robot)
+        intersections = self.getIntersections(self.obstacles, self.robot)
+        self.intersections += intersections
         xPoints = []
         yPoints = []
         
-        for i in range(len(self.intersections)):
-            xPoints.append(self.intersections[i][0])
-            yPoints.append(self.intersections[i][1])
+        for i in range(len(intersections)):
+            xPoints.append(intersections[i][0])
+            yPoints.append(intersections[i][1])
         ax.plot(xPoints, yPoints, 'r*')
-        
-        return ax
     
+    #---------------------------Outdated--------------------------------------
     def moveRobot(self):
         raise NotImplementedError
