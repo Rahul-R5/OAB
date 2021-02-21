@@ -12,23 +12,28 @@ from numpy import dot
 from math import pi, cos, sin, tanh, atan2, sqrt
 
 from oab.SensorFactory import SensorFactory
+from oab.MapInfo import MapInfo
+
 
 # NOTE: Can use **kwargs for keyword arguments passed. Better reaability
 class Robot():
     
-    def __init__(self, origin, angle):
+    def __init__(self, origin, angle, size = 3):
         self.origin = origin
         self.angle = angle
+        self.size = size
         self.sensors = []
         self.coords = []         
         #self.actions =  self.populate_actions()
         self.timestamps = np.array([])
         self.states = np.array([])
+        self.isBlocked = False
+        self.mapInstance = MapInfo.getMap()
         self.history = []
         self.populate_coords()
         
     def populate_coords(self):
-        size = 3
+        size = self.size
         reso = (2 * pi/5)
         ptX = self.origin[0]
         ptY = self.origin[1]
@@ -102,8 +107,11 @@ class Robot():
         start = np.array([x0, y0, theta0])
         
         # Solve the path with the initial conditions
-        [t,x] = solver.solve(start,dest)
+        [t, x] = solver.solve(start,dest)
         
+        # Check solved path for obstruction
+        [t, x] = self.checkPath(t, x)
+
         # Add the path to the history
         if len(self.timestamps) == 0:
             self.timestamps = t
@@ -116,6 +124,26 @@ class Robot():
         # origin/orientation has not been updated for next move
         self.origin = self.states[-1,0:2]
         self.angle = self.states[-1,2]
+    
+    def checkPath(self, t, path):
+        # Get robot size 
+        size = self.size
+        
+        # Loop through states
+        for index in range(len(path)):
+            state = path[index]
+            # If robot intersects, trim states and timestamps
+            for obstacle in self.mapInstance.obstacles:
+                dist = self._getL2Distance(obstacle.origin, state[0:2])
+                if dist <= (obstacle.size + size):
+                    t = t[:index]
+                    path = path[:index]
+                    return [t, path]
+            
+        return [t, path]
+    
+    def doesIntersect():
+        pass
     
     # Not used           
     def perform(self, index):
