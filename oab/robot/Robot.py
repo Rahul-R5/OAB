@@ -9,25 +9,26 @@ from scipy.integrate import solve_ivp
 
 from numpy.linalg import inv
 from numpy import dot
-from math import pi, cos, sin, tanh, atan2, sqrt
+from math import pi, cos, sin, tanh, sqrt
 
 from oab.SensorFactory import SensorFactory
 from oab.MapInfo import MapInfo
+from oab.robot.RobotInfo import RobotInfo
 
 
-# NOTE: Can use **kwargs for keyword arguments passed. Better reaability
+# NOTE: Can use **kwargs for keyword arguments passed. Better readability
 class Robot():
     
     def __init__(self, origin, angle, size = 3):
         self.origin = origin
         self.angle = angle
         self.size = size
+        
         self.sensors = []
         self.coords = []         
-        #self.actions =  self.populate_actions()
         self.timestamps = np.array([])
         self.states = np.array([])
-        self.isBlocked = False
+        
         self.mapInstance = MapInfo.getMap()
         self.history = []
         self.populate_coords()
@@ -98,7 +99,8 @@ class Robot():
     def moveto(self, dest):
         
         # Given dest, set this dest in the controller of choice
-        solver = PathSolver()
+        map = self.mapInstance
+        solver = PathSolver(map)
         
         # Set the initial condition variables
         x0 = self.origin[0]
@@ -108,9 +110,6 @@ class Robot():
         
         # Solve the path with the initial conditions
         [t, x] = solver.solve(start,dest)
-        
-        # Check solved path for obstruction
-        [t, x] = self.checkPath(t, x)
 
         # Add the path to the history
         if len(self.timestamps) == 0:
@@ -142,9 +141,15 @@ class Robot():
             
         return [t, path]
     
-    def doesIntersect():
-        pass
-    
+    def checkCollision(self, state):
+        # If robot intersects, trim states and timestamps
+        for obstacle in self.mapInstance.obstacles:
+            dist = self._getL2Distance(obstacle.origin, state[0:2])
+            if dist <= (obstacle.size + self.size):
+                return True
+            
+        return False
+
     # Not used           
     def perform(self, index):
         # Take index and get action string from translate list
@@ -153,8 +158,7 @@ class Robot():
         # Take action string and execute function        
         action()
     
-    #---------------------------Helper functions------------------------------
-    
+    #---------------------------Helper functions------------------------------    
     def _getLineParam(self, A, B):
         M = (B[1] - A[1])/ (B[0] - A[0])
         C = A[1] - (M * A[0])
@@ -193,6 +197,9 @@ D2xd = -1
 D2yd = -1
 
 class PathSolver():
+    def __init__(self, mapInstance):
+        self.mapInstance = mapInstance
+        
     def _setDerivatives(self, **kwargs):
         global xd
         global yd
@@ -201,13 +208,25 @@ class PathSolver():
         global D2xd
         global D2yd
         
-        xd = kwargs["xd"]
-        yd = kwargs["yd"]
+        keys = kwargs.keys()
+        
+        if "xd" in keys:            
+            xd = kwargs["xd"]
+            
+        if "yd" in keys:  
+            yd = kwargs["yd"]
+            
+        if "Dxd" in keys:            
+            Dxd = kwargs["Dxd"]
+            
+        if "Dyd" in keys:  
+            Dyd = kwargs["Dyd"]
         
     def solve(self, start, dest):
         # Initial condition
         init_state = start
         self._setDerivatives(xd = dest[0], yd = dest[1])
+        
         # Simulation time
         time = 100
         
@@ -219,7 +238,8 @@ class PathSolver():
         solver = "BDF"
         
         # Model solver
-        sol = solve_ivp(mobile_model, [0, time], init_state, method=solver, dense_output=True)
+        sol = solve_ivp(mobile_model, [0, time], init_state, 
+                        method=solver, dense_output=True)
         t = np.array(sol.t)
         x = np.transpose(sol.y)
         return [t,x]
@@ -232,11 +252,23 @@ def mobile_model(t,x):
     [v, omega] = CL_controller(t, x)
 
     # Model evaluated
-    next_state = [ v*cos(theta),
-                   v*sin(theta),
-                   omega ]
+    dState = [  v*cos(theta),
+                v*sin(theta),
+                omega ]
     
-    return next_state
+    # Estimating next state of robot for collision detection
+    next_x = x[0] + dState[0] * 0.01
+    next_y = x[1] + dState[1] * 0.01
+    next_theta = x[2] + dState[2] * 0.01
+    next_state = [next_x, next_y, next_theta]
+    
+    # Check collision for next state 
+    robotInstance = RobotInfo.getRobot()
+    if robotInstance.checkCollision(next_state) is True:
+        # Can be toggled for disabling collision
+        return [0, 0, 0]
+    else:
+        return dState
         
 def CL_controller(t, x):
     # Variables
