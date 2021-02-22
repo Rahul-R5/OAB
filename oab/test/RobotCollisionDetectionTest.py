@@ -19,6 +19,7 @@ from celluloid import Camera
 
 from oab.Map import Map
 from oab.MapInfo import MapInfo
+from oab.robot.RobotInfo import RobotInfo
 
 class RobotCollisionDetectionTest():
     
@@ -35,6 +36,7 @@ class RobotCollisionDetectionTest():
         options = [robot_pos, robot_angle]
         map.addRobot(options=options)
         robot = map.robot
+        RobotInfo.addRobot(robot)
         
         # Make custom route(No obstacles and ignores obstacles)
         path = [[50, 70], [90, 50], [85, 10], [10, 10]]
