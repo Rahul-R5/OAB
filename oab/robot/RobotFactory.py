@@ -15,19 +15,6 @@ class RobotFactory():
     mapInstance = None
     
     @staticmethod
-    def getRobot():
-        if RobotFactory.mapInstance is None:
-            RobotFactory.mapInstance = MapInfo.getMap()
-            RobotFactory.seed = RobotFactory.mapInstance.seed
-        
-        origin = RobotFactory.getRandomPos()
-        start_ang = RobotFactory.getRandomAngle()
-                
-        robot = Robot(origin, start_ang)        
-        robot.add_sensor()
-        return robot
-    
-    @staticmethod
     def getRobot(options = []):
         if RobotFactory.mapInstance is None:
             RobotFactory.mapInstance = MapInfo.getMap()
@@ -36,12 +23,13 @@ class RobotFactory():
         if len(options) == 0:
             origin = RobotFactory.getRandomPos()
             start_ang = RobotFactory.getRandomAngle()
-        elif len(options) == 2:
+            size = 3
+        elif len(options) == 3:
             origin = options[0]
             start_ang = options[1]
+            size = options[2]
                 
-        robot = Robot(origin, start_ang)        
-        robot.add_sensor()
+        robot = Robot(origin, start_ang, size)    
         return robot
         
     

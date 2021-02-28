@@ -16,16 +16,38 @@ class SensorFactory():
     
     # Try using **kwargs to get the sensor options
     @staticmethod
-    def getSensor():
+    def getSensor(**kwargs):
         if SensorFactory.mapInstance is None:
             SensorFactory.mapInstance = MapInfo.getMap()
             SensorFactory.seed = SensorFactory.mapInstance.seed
         
-        origin = SensorFactory.getRandomPos()
-        start_ang = SensorFactory.getRandomAngle()
-        ang_range = SensorFactory.getRadians(90)
-        sensor_range = 20
-        num_rays = 10
+        keys = kwargs.keys()
+        
+        if "origin" in keys:
+            origin = kwargs["origin"]
+        else:
+            origin = SensorFactory.getRandomPos()
+            
+        if "start_ang" in keys:
+            start_ang = kwargs["start_ang"]
+        else:
+            start_ang = SensorFactory.getRandomAngle()
+        
+        if "ang_range" in keys:
+            ang_range = SensorFactory.getRadians(kwargs["ang_range"])
+        else:
+            ang_range = SensorFactory.getRadians(90)
+        
+        if "sensor_range" in keys:
+            sensor_range = kwargs["sensor_range"]
+        else:
+            sensor_range = 20
+        
+        if "num_rays" in keys:
+            num_rays = kwargs["num_rays"]
+        else:
+            num_rays = 10       
+        
         sensor = Sensor(origin, start_ang, ang_range, sensor_range, num_rays)
         return sensor
         

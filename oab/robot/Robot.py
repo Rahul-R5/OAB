@@ -11,6 +11,7 @@ from numpy.linalg import inv
 from numpy import dot
 from math import pi, cos, sin, tanh, sqrt
 
+from oab.shape import Shape
 from oab.SensorFactory import SensorFactory
 from oab.MapInfo import MapInfo
 from oab.robot.RobotInfo import RobotInfo
@@ -65,12 +66,8 @@ class Robot():
         self.sensors[0].set_state(state)
         
     #--------------------------Sensor Management------------------------------        
-    def add_sensor(self):
-        sensor = SensorFactory.getSensor()
-        state = []
-        state.extend(self.origin)
-        state.append(self.angle)
-        sensor.set_state(state)
+    def add_sensor(self, **kwargs):
+        sensor = SensorFactory.getSensor(**kwargs)
         self.sensors.append(sensor)
     
     def remove_sensor(self, index = None):
@@ -78,6 +75,46 @@ class Robot():
             self.sensors.pop()
         else:
             del self.sensors[index]
+            
+    def get_tangent_nodes(self):
+        intersections = []
+        #det_index = []
+        sensor = self.sensors[0]
+        sensor_pts = sensor.get_pts()
+        sensor_origin = sensor.origin
+        
+        obstacles = self.mapInstance.obstacles
+        for j in range(len(sensor_pts)):
+            temp_pts = []
+            obs_index = []
+            for index, obstacle in enumerate(obstacles):
+                obstacle_pts = obstacle.get_coords()
+                for i in range(len(obstacle_pts)):    
+                    vertA = i
+                    
+                    if i == (len(obstacle_pts) - 1):
+                        vertB = 0              
+                    else:
+                        vertB = vertA + 1
+                        
+                    [flag, point] = self.mapInstance._getLineIntersection(obstacle_pts[vertA], obstacle_pts[vertB], 
+                                                                  sensor_pts[j], sensor_origin)
+                        
+                    if flag:
+                        temp_pts.append(point)
+                        obs_index.append(index)
+            
+            # Eliminating intersections through obstacles through L2 norm
+            val, pos = self.mapInstance._getClosestIntersection(temp_pts, sensor_origin)
+            
+            if pos >= 0:
+                intersections.append([temp_pts[pos], obs_index[pos]])
+                #det_index.append(obs_index[pos])
+                
+        # Categorizing the detections by obstacle
+        intersections.sort(key = lambda x: x[1], reverse = False)
+                
+        return intersections
         
     #-------------------------Movement actuators------------------------------  
     def rotate(self, angle):
@@ -199,8 +236,31 @@ D2yd = -1
 class PathSolver():
     def __init__(self, mapInstance):
         self.mapInstance = mapInstance
+        self.robotInstance = RobotInfo.getRobot()
         
-    def _setDerivatives(self, **kwargs):
+    def solve(self, start, dest):
+        # Initial condition
+        init_state = start
+        _setDerivatives(xd = dest[0], yd = dest[1])
+        
+        # Simulation time
+        time = 100
+        
+        # Model limits        
+        # TODO:These limits need to be used
+        # v_limit = 2
+        # omega_limit = pi
+        
+        solver = "BDF"
+        
+        # Model solver
+        sol = solve_ivp(tangentbug_model, [0, time], init_state, 
+                        method=solver, dense_output=True)
+        t = np.array(sol.t)
+        x = np.transpose(sol.y)
+        return [t,x]
+    
+def _setDerivatives(**kwargs):
         global xd
         global yd
         global Dxd
@@ -221,29 +281,63 @@ class PathSolver():
             
         if "Dyd" in keys:  
             Dyd = kwargs["Dyd"]
-        
-    def solve(self, start, dest):
-        # Initial condition
-        init_state = start
-        self._setDerivatives(xd = dest[0], yd = dest[1])
-        
-        # Simulation time
-        time = 100
-        
-        # Model limits        
-        # TODO:These limits need to be used
-        # v_limit = 2
-        # omega_limit = pi
-        
-        solver = "BDF"
-        
-        # Model solver
-        sol = solve_ivp(mobile_model, [0, time], init_state, 
-                        method=solver, dense_output=True)
-        t = np.array(sol.t)
-        x = np.transpose(sol.y)
-        return [t,x]
+            
+#decorator with argument to attach arguments
+def attach_static(**kwargs):
+    def decorate(func):
+        for args in kwargs:
+            setattr(func, args, kwargs[args])
+        return func
+    return decorate     
 
+#@attach_static(inBoundaryMode = False, finalTarget = [], robot = RobotInfo.getRobot(), map = MapInfo.getMap())
+def tangentbug_model(t,x):
+    # States extracted
+    theta = x[2]    
+    robot = RobotInfo.getRobot()
+    # Remember: heuristics monotonically decreases throughout the path
+    # The break away point is when it starts increasing, it shifts there to boundary following
+    
+    # Common on repeat
+    # Get sensor data
+    nodes = robot.get_tangent_nodes()
+    # If no detection(i.e no obstacles in path), continue as normal
+    if len(nodes) > 0:
+    # If detection, calculate heuristic for all tangent nodes(i.e detections)
+        pass
+    # If the heuristic through node is higher than straight through, continue as same
+    
+    # Else change target to this temporary min heuristic target and move towards it?
+    # Now it is transitioning to the point on the obstacle where boundary following happens
+    # Switch mode or some flag for boundary mode
+    
+    # let it run
+    
+    # If in boundary mode and target is not destination
+    
+    # Set target to a point on parallel line to the sensed endpoints in direction of heuristics
+    
+    # Get control inputs
+    [v, omega] = CL_controller(t, x)
+
+    # Model evaluated
+    dState = [  v*cos(theta),
+                v*sin(theta),
+                omega ]
+    
+    # Estimating next state of robot for collision detection
+    next_x = x[0] + dState[0] * 0.01
+    next_y = x[1] + dState[1] * 0.01
+    next_theta = x[2] + dState[2] * 0.01
+    next_state = [next_x, next_y, next_theta]
+    
+    # Check collision for next state 
+    if robot.checkCollision(next_state) is True:
+        # Can be toggled for disabling collision
+        return [0, 0, 0]
+    else:
+        return dState
+    
 def mobile_model(t,x):
     # States extracted
     theta = x[2]

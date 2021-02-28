@@ -33,10 +33,10 @@ class Map():
         else:
             self.obstacles = ShapeFactory.getShapes(num)
             
-    def addRobot(self, options = []):
+    def addRobot(self, options = [], **kwargs):
         if self.robot is None:            
-            if len(options) == 2:
-                self.robot = RobotFactory.getRobot([options[0], options[1]])
+            if len(options) == 3:
+                self.robot = RobotFactory.getRobot(options, **kwargs)
             else:
                 self.robot = RobotFactory.getRobot()
             

@@ -29,13 +29,15 @@ class RobotCollisionDetectionTest():
         map = Map(0.5, (100,100), 10)
         robot_pos = [40, 40]
         robot_angle = (90/180) * pi
+        robot_size = 3
         MapInfo.setMap(map)
         map.addObstacles(25)
         
         # Create robot
-        options = [robot_pos, robot_angle]
+        options = [robot_pos, robot_angle, robot_size]
         map.addRobot(options=options)
         robot = map.robot
+        robot.add_sensor(num_rays = 10, ang_range = 359)
         RobotInfo.addRobot(robot)
         
         # Make custom route(No obstacles and ignores obstacles)
